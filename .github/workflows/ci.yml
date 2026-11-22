@@ -1,0 +1,34 @@
+name: Local identity quality gates
+on:
+  pull_request:
+  push:
+    branches: [main, development]
+permissions:
+  contents: read
+concurrency:
+  group: identity-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run db:up
+      - run: npm run db:init
+      - run: npm run format:check
+      - run: npm run check
+      - run: npm audit --audit-level=moderate
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - if: always()
+        run: npm run db:stop
+# Foundation workflow only: no AWS credentials, write permission or deployment.
+# Full SAST/secrets/container/IaC/DAST gates remain tracked in IMPLEMENTATION_PLAN.md.

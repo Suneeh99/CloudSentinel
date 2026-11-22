@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cloudsentinel-db-init
+  namespace: cloudsentinel
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: init
+          image: cloudsentinel:local
+          imagePullPolicy: IfNotPresent
+          command: [node, dist/server/init-db.js]
+          env:
+            - name: DYNAMODB_LOCAL_ENDPOINT
+              value: http://dynamodb:8000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: '1'
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]

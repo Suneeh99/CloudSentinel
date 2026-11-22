@@ -1,0 +1,47 @@
+name: cloudsentinel
+services:
+  dynamodb:
+    image: amazon/dynamodb-local:3.1.0
+    command: '-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data'
+    user: root
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -s http://localhost:8000 >/dev/null']
+      interval: 3s
+      timeout: 2s
+      retries: 20
+  db-init:
+    image: cloudsentinel:local
+    build: .
+    command: ['node', 'dist/server/init-db.js']
+    environment:
+      DYNAMODB_LOCAL_ENDPOINT: http://dynamodb:8000
+    depends_on:
+      dynamodb:
+        condition: service_healthy
+    restart: 'no'
+  app:
+    image: cloudsentinel:local
+    build: .
+    ports:
+      - '127.0.0.1:${CLOUDSENTINEL_PORT:-3000}:3000'
+    environment:
+      APP_ENV: local
+      APP_ORIGIN: http://localhost:${CLOUDSENTINEL_PORT:-3000}
+      DYNAMODB_LOCAL_ENDPOINT: http://dynamodb:8000
+    volumes:
+      - mfa-data:/app/.local
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+volumes:
+  dynamodb-data:
+  mfa-data:

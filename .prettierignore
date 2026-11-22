@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist
+package-lock.json
+*.drawio
+.playwright-cli
+test-results
+playwright-report
+.local
+**/next-env.d.ts

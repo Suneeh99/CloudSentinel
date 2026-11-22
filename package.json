@@ -1,0 +1,59 @@
+{
+  "name": "cloudsentinel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "tsx watch scripts/server.ts",
+    "db:up": "tsx scripts/local-db.ts",
+    "db:init": "tsx scripts/init-db.ts",
+    "build": "npm run build --workspace @cloudsentinel/dashboard && npm run build:api && npm run build:server",
+    "build:api": "esbuild services/identity-service/src/lambda.ts --bundle --platform=node --target=node22 --format=esm --packages=external --outfile=dist/identity/handler.mjs",
+    "typecheck": "tsc --noEmit && npm run typecheck --workspace @cloudsentinel/dashboard",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "tsx scripts/e2e.ts",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "db:stop": "tsx scripts/local-db.ts stop",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build:server": "esbuild scripts/server.ts scripts/init-db.ts --bundle --platform=node --target=node22 --format=esm --packages=external --outdir=dist/server",
+    "start": "node dist/server/server.js",
+    "test:container": "bash scripts/container-smoke.sh"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1161.0",
+    "@aws-sdk/client-ec2": "3.1161.0",
+    "@aws-sdk/client-s3": "3.1161.0",
+    "@aws-sdk/client-sts": "3.1161.0",
+    "@aws-sdk/lib-dynamodb": "3.1161.0",
+    "argon2": "0.45.2",
+    "otpauth": "9.6.0",
+    "qrcode": "1.5.4",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/aws-lambda": "8.10.164",
+    "@types/node": "26.6.6",
+    "@types/qrcode": "1.5.6",
+    "esbuild": "0.28.2",
+    "eslint": "10.14.0",
+    "prettier": "3.9.10",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.1.0"
+  },
+  "overrides": {
+    "minimatch": "11.0.4"
+  }
+}

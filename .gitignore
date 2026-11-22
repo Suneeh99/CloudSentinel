@@ -1,0 +1,25 @@
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+.playwright-cli/
+.local/
+*.tfstate*
+.terraform/
+*.tfplan
+*.tsbuildinfo
+
+# Local supporting documentation
+/docs/
+/deployment/AWS-MANUAL-WALKTHROUGH.md
+
+# Local agent tooling
+.agents/
+AGENTS.md
+/skills-lock.json

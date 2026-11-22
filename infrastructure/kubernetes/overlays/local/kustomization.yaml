@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - dynamodb.yaml
+  - init-job.yaml
+configMapGenerator:
+  - name: cloudsentinel-config
+    behavior: merge
+    literals:
+      - APP_ENV=local
+      - APP_ORIGIN=http://localhost:3000
+      - DYNAMODB_LOCAL_ENDPOINT=http://dynamodb:8000
+patches:
+  - target:
+      kind: Deployment
+      name: cloudsentinel
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
